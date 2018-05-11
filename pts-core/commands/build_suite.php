@@ -36,6 +36,7 @@ class build_suite implements pts_option_interface
 
 		$possible_suites = pts_openbenchmarking::available_suites();
 		$possible_tests = pts_openbenchmarking::available_tests();
+		$local_tests = pts_tests::local_tests();
 
 		$new_suite = new pts_test_suite();
 		$new_suite->set_title($suite_name);
@@ -71,7 +72,7 @@ class build_suite implements pts_option_interface
 			switch($input_option)
 			{
 				case 'Add Test':
-					$test_to_add = pts_user_io::prompt_text_menu('Enter test name', $possible_tests);
+					$test_to_add = pts_user_io::prompt_text_menu('Enter test name',  array_merge($possible_tests, $local_tests));
 					$test_profile = new pts_test_profile($test_to_add);
 
 					list($args, $description) = pts_test_run_options::prompt_user_options($test_profile);

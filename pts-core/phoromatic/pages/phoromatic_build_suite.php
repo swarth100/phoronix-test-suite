@@ -172,7 +172,16 @@ class phoromatic_build_suite implements pts_webui_interface
 				$cache_json = file_get_contents($dc . 'pts-download-cache.json');
 				$cache_json = json_decode($cache_json, true);
 			}
-			foreach(pts_openbenchmarking::available_tests(false, true) as $test)
+
+			/* Retrieve all tests, both remote and local */
+            $openbenchmarking_tests = pts_openbenchmarking::available_tests(false);
+            $local_tests = pts_tests::local_tests();
+
+            /* Merge them into a single array */
+            $all_tests = array_merge($local_tests, $openbenchmarking_tests);
+
+            /* Parse the given array */
+			foreach($all_tests as $test)
 			{
 				$cache_checked = false;
 				if($dc_exists)
