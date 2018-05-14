@@ -175,7 +175,6 @@ class phoromatic_build_suite implements pts_webui_interface
 
 			/* Retrieve all tests, both remote and local */
             $openbenchmarking_tests = pts_openbenchmarking::available_tests(false);
-            $local_tests = pts_tests::local_tests();
 
             /* Merge them into a single array */
             $all_tests = array_merge($local_tests, $openbenchmarking_tests);
