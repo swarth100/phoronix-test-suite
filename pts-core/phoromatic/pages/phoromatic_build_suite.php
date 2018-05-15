@@ -174,13 +174,10 @@ class phoromatic_build_suite implements pts_webui_interface
 			}
 
 			/* Retrieve all tests, both remote and local */
-            $openbenchmarking_tests = pts_openbenchmarking::available_tests(false);
-
-            /* Merge them into a single array */
-            $all_tests = array_merge($local_tests, $openbenchmarking_tests);
+            $openbenchmarking_tests = pts_openbenchmarking::available_tests(false, true);
 
             /* Parse the given array */
-			foreach($all_tests as $test)
+			foreach($openbenchmarking_tests as $test)
 			{
 				$cache_checked = false;
 				if($dc_exists)
