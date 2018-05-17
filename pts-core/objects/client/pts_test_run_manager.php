@@ -1667,7 +1667,9 @@ class pts_test_run_manager
 
 			if($this->test_profile_system_compatibility_check($test_profile, true) == false)
 			{
-				$valid_test_profile = false;
+				/* Edit do not check system compatibility when running tests.
+				 * This prevents execution on PowerPC */
+				//$valid_test_profile = false;
 			}
 			else if($test_profile->get_test_executable_dir() == null)
 			{
