@@ -704,7 +704,7 @@ class pts_client
 
 		if(FIRST_RUN_ON_PTS_UPGRADE)
 		{
-			if($requested_gsid == false)
+			if($requested_gsid == false && pts_network::internet_support_available())
 			{
 				pts_openbenchmarking_client::update_gsid();
 			}
@@ -774,6 +774,11 @@ class pts_client
 	}
 	public static function available_phoromatic_servers()
 	{
+		if(defined('PHOROMATIC_SERVER') && PHOROMATIC_SERVER)
+		{
+			return array();
+		}
+
 		static $last_phoromatic_scan = 0;
 		static $phoromatic_servers = false;
 
@@ -786,7 +791,10 @@ class pts_client
 
 			foreach(self::$phoromatic_servers as $server)
 			{
-				$possible_servers[] = array($server['ip'], $server['http_port']);
+				if(pts_network::get_local_ip() != $server['ip'])
+				{
+					$possible_servers[] = array($server['ip'], $server['http_port']);
+				}
 			}
 
 			$user_config_phoromatic_servers = pts_config::read_user_config('PhoronixTestSuite/Options/General/PhoromaticServers', '');
@@ -832,7 +840,7 @@ class pts_client
 				// possible_server[0] is the Phoromatic Server IP
 				// possible_server[1] is the Phoromatic Server HTTP PORT
 
-				if(in_array($possible_server[0], array_keys($phoromatic_servers)))
+				if(in_array($possible_server[0], array_keys($phoromatic_servers)) || pts_network::get_local_ip() ==  $possible_server[0])
 				{
 					continue;
 				}
@@ -893,7 +901,7 @@ class pts_client
 			{
 				pts_client::$display->generic_heading('User Agreement');
 				echo wordwrap($user_agreement, 65);
-				$agree = pts_user_io::prompt_bool_input('Do you agree to these terms and wish to proceed', true);
+				$agree = pts_user_io::prompt_bool_input('Do you agree to these terms and wish to proceed', -1);
 
 				$usage_reporting = $agree ? pts_user_io::prompt_bool_input('Enable anonymous usage / statistics reporting', -1) : -1;
 			}
@@ -1916,6 +1924,12 @@ class pts_client
 				if(($s = strpos($error_string, 'Undefined ')) !== false && ($x = strpos($error_string, ': ', $s)) !== false)
 				{
 					$error_string = 'Undefined: ' . substr($error_string, ($x + 2));
+				}
+				else if(strpos($error_string, 'Unable to find the socket transport') !== false)
+				{
+					$error_string = 'PHP OpenSSL support is needed to handle HTTPS downloads.';
+					$error_file = null;
+					$error_line = null;
 				}
 				else
 				{

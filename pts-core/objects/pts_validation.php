@@ -418,7 +418,225 @@ class pts_validation
 		}
 		return $types;
 	}
-	public static function process_xsd_display_chart($xsd_file, $obj = null, $types = null)
+	public static function xsd_to_cli_creator($xsd_file, &$new_object, $types = null)
+	{
+		$nodes = self::generate_xsd_element_objects($xsd_file, null, $types);
+		self::xsd_nodes_to_cli_prompts($nodes, $new_object);
+	}
+	public static function xsd_nodes_to_cli_prompts($nodes, &$new_object)
+	{
+		foreach($nodes as $path => $node)
+		{
+			if($node->get_documentation() == null)
+			{
+				continue;
+			}
+
+			if(in_array('UNCOMMON', $node->get_flags_array()))
+			{
+				continue;
+			}
+
+			echo pts_client::cli_just_bold($node->get_name());
+
+			/*
+			if($node->get_value() != null)
+			{
+				echo ': ' . pts_client::cli_colored_text($node->get_value(), 'cyan');
+			}
+			*/
+
+			echo PHP_EOL;
+			$enums = array();
+			$min_value = -1;
+			$max_value = -1;
+			$type_restrict = null;
+			if($node->get_input_type_restrictions() != null)
+			{
+				$type = $node->get_input_type_restrictions();
+				$type_restrict = $type->get_type();
+				// echo 'xx' . $type->get_name() . ' ' . $type->get_type() . 'xx' . PHP_EOL;
+				$enums = $type->get_enums();
+				if(!empty($enums))
+				{
+					echo pts_client::cli_colored_text('Possible Values: ', 'gray', true) . implode(', ', $enums) . PHP_EOL;
+					echo pts_client::cli_colored_text('Multiple Selections Allowed: ', 'gray', true) . ($type->multi_enum_select() ? 'YES' : 'NO') . PHP_EOL;
+				}
+				$min_value = $type->get_min_value();
+				if($min_value > -1)
+				{
+					echo pts_client::cli_colored_text('Minimum Value: ', 'gray', true) . $min_value . PHP_EOL;
+				}
+				$max_value = $type->get_max_value();
+				if($max_value > 0)
+				{
+					echo pts_client::cli_colored_text('Maximum Value: ', 'gray', true) . $max_value . PHP_EOL;
+				}
+			}
+			/*if($node->get_api() != null)
+			{
+				echo pts_client::cli_colored_text('API: ', 'gray', true) . $node->get_api()[0] . '->' . $node->get_api()[1] . '()' . PHP_EOL;
+			}*/
+			if($node->get_documentation() != null)
+			{
+				echo $node->get_documentation() . PHP_EOL;
+			}
+			if($node->get_default_value() != null)
+			{
+				echo pts_client::cli_colored_text('Default Value: ', 'gray', true) . $node->get_default_value() . PHP_EOL;
+			}
+
+			$do_require = in_array('TEST_REQUIRES', $node->get_flags_array());
+			if(!empty($enums))
+			{
+				$input = pts_user_io::prompt_text_menu('Select from the supported options', $enums, $type->multi_enum_select(), false, null);
+			}
+			else
+			{
+				do
+				{
+					$input_passes = true;
+					$input = pts_user_io::prompt_user_input($path, !($do_require && $node->get_default_value() == null), false);
+
+					if($do_require && $min_value > 0 && strlen($input) < $min_value)
+					{
+						echo 'Minimum length of ' . $min_value . ' is required.';
+						$input_passes = false;
+					}
+					if($do_require && $max_value > 0 && strlen($input) > $max_value)
+					{
+						echo 'Maximum length of ' . $max_value . ' is supported.';
+						$input_passes = false;
+					}
+					if(!empty($input) && $type_restrict == 'INT' && !is_numeric($input))
+					{
+						echo 'Input must be a valid integer number.';
+						$input_passes = false;
+					}
+					if(!empty($input) && $type_restrict == 'xs:decimal' && !is_numeric($input))
+					{
+						echo 'Input must be a valid number.';
+						$input_passes = false;
+					}
+
+				}
+				while(!$input_passes);
+
+				if(empty($input) && $node->get_default_value() != null)
+				{
+					$input = $node->get_default_value();
+				}
+			}
+
+			$new_object->addXmlNodeWNE($path, trim($input));
+
+			echo PHP_EOL;
+		}
+	}
+	public static function xsd_to_html_creator($xsd_file, $types = null)
+	{
+		$nodes = self::generate_xsd_element_objects($xsd_file, null, $types);
+		return self::xsd_nodes_to_html_prompts($nodes);
+	}
+	public static function xsd_nodes_to_html_prompts($nodes)
+	{
+		$html = null;
+
+		foreach($nodes as $path => $node)
+		{
+			if($node->get_documentation() == null)
+			{
+				continue;
+			}
+
+			$uncommon = in_array('UNCOMMON', $node->get_flags_array());
+			$html .= '<div style="" class="' . ($uncommon ? 'pts_phoromatic_create_test_option_area_uncommon' : 'pts_phoromatic_create_test_option_area') . '" id="' . str_replace('/', '', $path) . '">';
+			$html .= '<h3>' . $node->get_name() . ($uncommon ? ' <sup> Uncommon Option; Hover To Expand</sup>' : '') . '</h3>' . PHP_EOL;
+
+			$enums = array();
+			$min_value = -1;
+			$max_value = -1;
+			$type_restrict = null;
+			if($node->get_input_type_restrictions() != null)
+			{
+				$html .= '<p>';
+				$type = $node->get_input_type_restrictions();
+				$type_restrict = $type->get_type();
+				$enums = $type->get_enums();
+				$min_value = $type->get_min_value();
+				if($min_value > 0)
+				{
+					$html .= '<strong>Minimum Value: </strong>' . $min_value;
+				}
+				$max_value = $type->get_max_value();
+				if($max_value > 0)
+				{
+					$html .= '<strong>Maximum Value: </strong>' . $max_value;
+				}
+				$html .= '</p>';
+			}
+			if($node->get_documentation() != null)
+			{
+				$html .= '<p>' . str_replace($node->get_name(), '<em>' . $node->get_name() . '</em>', $node->get_documentation()) . '</p>';
+			}
+
+			$do_require = in_array('TEST_REQUIRES', $node->get_flags_array());
+			$html .= '<p>';
+			if(!empty($enums))
+			{
+				$html .= '<select name="' . $path . '" ' . ($type->multi_enum_select() ? ' multiple' : '') . ($do_require ? ' required' : '') . '>' . PHP_EOL;
+				foreach($enums as $enum)
+				{
+					$html .= '<option value="' . $enum . '"' . ($node->get_default_value() == $enum ? 'selected="selected"' : null) . '>' . $enum . '</option>';
+				}
+				$html .= '</select>';
+			}
+			else
+			{
+				if($type_restrict == 'INT' || $type_restrict == 'xs:decimal')
+				{
+					$html .= '<input type="number" name="' . $path . '" value="' . $node->get_default_value() . '" min="1" ' . ($do_require ? ' required' : '') . ' />';
+				}
+				else
+				{
+					$html .= '<input type="text" name="' . $path . '" value="' . $node->get_default_value() . '" ' . ($do_require ? ' required' : '') . ' />';
+				}
+			}
+
+			$html .= '</p>';
+			$html .= '</div>';
+		}
+
+		return $html;
+	}
+	public static function xsd_to_var_array_generate_xml($xsd_file, $types, &$array_to_check, &$writer)
+	{
+		foreach(self::generate_xsd_element_objects($xsd_file, null, $types) as $path => $node)
+		{
+			$do_require = in_array('TEST_REQUIRES', $node->get_flags_array());
+			$value = isset($array_to_check[$path]) ? $array_to_check[$path] : null;
+			if(empty($value))
+			{
+				$value = $node->get_default_value();
+			}
+			if(empty($value))
+			{
+				continue;
+			}
+			if($do_require && empty($value))
+			{
+				//return 'The ' . $path . ' value cannot be empty.';
+			}
+			$writer->addXmlNodeWNE($path, trim($value));
+		}
+
+		return true;
+	}
+	public static function string_to_sanitized_test_profile_base($input)
+	{
+		return pts_strings::keep_in_string(str_replace(' ', '-', strtolower($input)), pts_strings::CHAR_LETTER | pts_strings::CHAR_NUMERIC | pts_strings::CHAR_DASH);;
+	}
+	protected static function generate_xsd_element_objects($xsd_file, $obj = null, $types = null)
 	{
 		$doc = new DOMDocument();
 		if(is_file($xsd_file))
@@ -432,24 +650,40 @@ class pts_validation
 		$ev = $xpath->evaluate('/xs:schema/xs:element');
 		foreach($ev as $e)
 		{
-			//pts_validation::xsd_display_elements_cli($obj, $xpath, $e, 0, $types);
 			self::xsd_elements_to_objects($nodes, $obj, $xpath, $e, $types, '');
 		}
 
-		self::xsd_display_cli_from_objects($nodes);
+		return $nodes;
 	}
 	public static function xsd_elements_to_objects(&$append_to_array, $o, $xpath, $el, $types, $path)
 	{
+		static $unbounded;
+
 		if($el->getElementsByTagName('*')->length > 0 && $el->getElementsByTagName('*')->item(0)->nodeName == 'xs:annotation' && $el->getElementsByTagName('*')->item(0)->getElementsByTagName('documentation')->length > 0)
 		{
 			$name = $el->getAttribute('name');
 			$value = null;
-			if(($id = $el->getElementsByTagName('*')->item(0)->getAttribute('id')) != null && (is_callable(array($o, $id)) || (is_array($o) && isset($o[$id]))))
+			$get_api = null;
+			$set_api = null;
+			$default_value = null;
+			$flags = null;
+			$dynamic_list_multi = '';
+			$nodes_to_match = array('set' => 'set_api', 'get' => 'get_api', 'default' => 'default_value', 'flags' => 'flags', 'dynamic_list_multi' => 'dynamic_list_multi');
+			$cnodes = $el->getElementsByTagName('*');
+			for($i = 0; $i < $cnodes->length; $i++)
+			{
+				if(isset($nodes_to_match[$cnodes->item($i)->nodeName]))
+				{
+					${$nodes_to_match[$cnodes->item($i)->nodeName]} = $cnodes->item($i)->nodeValue;
+				}
+			}
+
+			if($get_api != null && (is_callable(array($o, $get_api)) || (is_array($o) && isset($o[$get_api]))))
 			{
 				if(is_object($o))
 				{
 					$class = get_class($o);
-					$val = call_user_func(array($o, $id));
+					$val = call_user_func(array($o, $get_api));
 
 					if(is_object($val))
 					{
@@ -460,7 +694,7 @@ class pts_validation
 				else if(is_array($o))
 				{
 					$class = null;
-					$val = $o[$id];
+					$val = $o[$get_api];
 				}
 
 				if($el->getAttribute('maxOccurs') == 'unbounded')
@@ -470,7 +704,7 @@ class pts_validation
 				}
 				else if(is_array($val))
 				{
-					$val = '{ ' . implode(', ', call_user_func(array($o, $id))) . ' }';
+					$val = '{ ' . implode(', ', call_user_func(array($o, $get_api))) . ' }';
 				}
 				else if($val === true)
 				{
@@ -487,7 +721,7 @@ class pts_validation
 				}
 			}
 
-			$input_type_restrictions = null;
+			$input_type_restrictions =  new pts_input_type_restrictions();
 			if($el->getAttribute('type') != null)
 			{
 				$type = $el->getAttribute('type');
@@ -497,20 +731,53 @@ class pts_validation
 					$input_type_restrictions = $types[$type];
 				}
 			}
-
-			$api = null;
-			if(!empty($id) && !empty($class))
+			if(is_array($unbounded))
 			{
-				$api = array($class, $id);
+				foreach($unbounded as $ub_check)
+				{
+					if(strpos($path, $ub_check) !== false)
+					{
+						$flags .= ' UNBOUNDED';
+						break;
+					}
+				}
+			}
+			$api = null;
+			if(!empty($get_api) && !empty($class))
+			{
+				$api = array($class, $get_api);
 			}
 			$documentation = trim($el->getElementsByTagName('annotation')->item('0')->getElementsByTagName('documentation')->item(0)->nodeValue);
-			$append_to_array[$path . '/' . $name] = new pts_element_node($name, $value, $input_type_restrictions, $api, $documentation);
+
+			if(empty($input_type_restrictions->get_enums()) && !empty($dynamic_list_multi))
+			{
+				$dynamic_list_multi = explode('.', $dynamic_list_multi);
+				if(count($dynamic_list_multi) == 2 && is_callable(array($dynamic_list_multi[0], $dynamic_list_multi[1])))
+				{
+					$dynamic_list_multi_enums = call_user_func(array($dynamic_list_multi[0], $dynamic_list_multi[1]));
+
+					if(is_array($dynamic_list_multi_enums))
+					{
+						$input_type_restrictions->set_enums($dynamic_list_multi_enums);
+						$input_type_restrictions->set_multi_enum_select(true);
+					}
+				}
+
+			}
+
+			$append_to_array[$path . '/' . $name] = new pts_element_node($name, $value, $input_type_restrictions, $api, $documentation, $set_api, $default_value, $flags);
 		}
 		else
 		{
 			$name = $el->getAttribute('name');
 			$append_to_array[$path . '/' . $name] = new pts_element_node($name);
 		}
+
+		if($el->getAttribute('maxOccurs') == 'unbounded')
+		{
+			$unbounded[$path . '/' . $name] =  $path . '/' . $name;
+		}
+
 		$els = $xpath->evaluate('xs:complexType/xs:sequence/xs:element', $el);
 		if(is_array($o) && !empty($o))
 		{
@@ -531,6 +798,11 @@ class pts_validation
 				self:: xsd_elements_to_objects($append_to_array, $o, $xpath, $e, $types, $path);
 			}
 		}
+	}
+	public static function process_xsd_display_chart($xsd_file, $obj = null, $types = null)
+	{
+		$nodes = self::generate_xsd_element_objects($xsd_file, $obj, $types);
+		self::xsd_display_cli_from_objects($nodes);
 	}
 	public static function xsd_display_cli_from_objects($nodes)
 	{
@@ -570,7 +842,15 @@ class pts_validation
 			}
 			if($node->get_api() != null)
 			{
-				echo str_repeat('     ', $depth) . pts_client::cli_colored_text('API: ', 'gray', true) . $node->get_api()[0] . '->' . $node->get_api()[1] . '()' . PHP_EOL;
+				echo str_repeat('     ', $depth) . pts_client::cli_colored_text('Get API: ', 'gray', true) . $node->get_api()[0] . '->' . $node->get_api()[1] . '()' . PHP_EOL;
+			}
+			if($node->get_api_setter() != null)
+			{
+				echo str_repeat('     ', $depth) . pts_client::cli_colored_text('Set API: ', 'gray', true) . $node->get_api_setter() . '()' . PHP_EOL;
+			}
+			if($node->get_default_value() != null)
+			{
+				echo str_repeat('     ', $depth) . pts_client::cli_colored_text('Default Value: ', 'gray', true) . $node->get_default_value() . PHP_EOL;
 			}
 			if($node->get_documentation() != null)
 			{
@@ -579,115 +859,88 @@ class pts_validation
 			echo PHP_EOL;
 		}
 	}
-
-
-
-
-
-
-	// OLD IMPLEMENTATION BELOW
-	public static function xsd_display_elements_cli($o, $xpath, $el, $depth = 0, $types = null)
+	public static function generate_test_profile_file_templates($tp_identifier, $tp_path)
 	{
-		if($el->getElementsByTagName('*')->length > 0 && $el->getElementsByTagName('*')->item(0)->nodeName == 'xs:annotation' && $el->getElementsByTagName('*')->item(0)->getElementsByTagName('documentation')->length > 0)
+		$test_profile = new pts_test_profile($tp_identifier);
+		$result_scale = $test_profile->get_result_scale();
+		$test_executable = $test_profile->get_test_executable();
+
+		if(!is_file($tp_path . '/install.sh'))
 		{
-			echo str_repeat('     ', $depth) . pts_client::cli_just_bold($el->getAttribute('name'));
-			if(($id = $el->getElementsByTagName('*')->item(0)->getAttribute('id')) != null && (is_callable(array($o, $id)) || (is_array($o) && isset($o[$id]))))
+			$sample_install_sh = '#!/bin/sh' . PHP_EOL . '# Auto-generated install.sh script for starting/helping the test profile creation process...' . PHP_EOL . PHP_EOL;
+
+			$download_extract_helpers = array();
+			foreach($test_profile->get_downloads() as $file)
 			{
-				if(is_object($o))
+				$file = $file->get_filename();
+				switch(substr($file, strrpos($file, '.') + 1))
 				{
-					$class = get_class($o);
-					$val = call_user_func(array($o, $id));
-
-					if(is_object($val))
-					{
-						$o = $val;
-						$val = null;
-					}
-				}
-				else if(is_array($o))
-				{
-					$class = null;
-					$val = $o[$id];
-				}
-
-				if($el->getAttribute('maxOccurs') == 'unbounded')
-				{
-					$o = $val;
-					$val = null;
-				}
-				else if(is_array($val))
-				{
-					$val = '{ ' . implode(', ', call_user_func(array($o, $id))) . ' }';
-				}
-				else if($val === true)
-				{
-					$val = 'TRUE';
-				}
-				else if($val === false)
-				{
-					$val = 'FALSE';
-				}
-
-				if(!empty($val))
-				{
-					echo ': ' . pts_client::cli_colored_text($val, 'cyan');
+					case 'zip':
+						$download_extract_helpers[] = 'unzip -o ' . $file;
+						break;
+					case 'gz':
+					case 'bz2':
+					case 'xz':
+					case 'tar':
+						$download_extract_helpers[] = 'tar -xvf ' . $file;
+						break;
+					case 'exe':
+					case 'msi':
+					case 'run':
+						$download_extract_helpers[] = './' . $file;
+						break;
 				}
 			}
-			echo PHP_EOL;
 
-			if($el->getAttribute('type') != null)
+			if(!empty($download_extract_helpers))
 			{
-				$type = $el->getAttribute('type');
-				if(isset($types[$type]))
-				{
-					$types[$type]->set_required($el->getAttribute('minOccurs') > 0);
-					$enums = $types[$type]->get_enums();
-					if(!empty($enums))
-					{
-						echo str_repeat('     ', $depth) . pts_client::cli_colored_text('Possible Values: ', 'gray', true) . implode(', ', $enums) . PHP_EOL;
-					}
-					$min_value = $types[$type]->get_min_value();
-					if($min_value > -1)
-					{
-						echo str_repeat('     ', $depth) . pts_client::cli_colored_text('Minimum Value: ', 'gray', true) . $min_value . PHP_EOL;
-					}
-					$max_value = $types[$type]->get_max_value();
-					if($max_value > 0)
-					{
-						echo str_repeat('     ', $depth) . pts_client::cli_colored_text('Maximum Value: ', 'gray', true) . $max_value . PHP_EOL;
-					}
-				}
+				$sample_install_sh . '# Presumably you want to extract/run the downloaded files for setting up the test case...' . PHP_EOL;
+				$sample_install_sh .= implode(PHP_EOL, $download_extract_helpers) . PHP_EOL;
 			}
-			if(!empty($id) && !empty($class))
-			{
-				echo str_repeat('     ', $depth) . pts_client::cli_colored_text('API: ', 'gray', true) . $class . '->' . $id . '()' . PHP_EOL;
-			}
-			echo str_repeat('     ', $depth) .  trim($el->getElementsByTagName('annotation')->item('0')->getElementsByTagName('documentation')->item(0)->nodeValue) . PHP_EOL;
-		}
-		else
-		{
-			echo str_repeat('     ', $depth) . pts_client::cli_colored_text($el->getAttribute('name'), 'yellow', true) . PHP_EOL;
+
+			$sample_install_sh .= PHP_EOL . 'echo "#!/bin/sh' . PHP_EOL;
+			$sample_install_sh .= '# the actual running/execution of the test, etc... This is called at run-time.' . PHP_EOL;
+			$sample_install_sh .= '# The program under test and/or any parsing/wrapper scripts should then pipe the results to \$LOG_FILE for parsing.' . PHP_EOL;
+			$sample_install_sh .= '# Passed to the script as arguments are any of the test arguments/options as defined by the test-definition.xml.' . PHP_EOL;
+			$sample_install_sh .= PHP_EOL . '# Editing the test profile\'s results-definition.xml controls how the Phoronix Test Suite will capture the program\'s result.' . PHP_EOL;
+			$sample_install_sh .= '# STATIC EXAMPLE below coordinated with the stock result-definition.xml.' . PHP_EOL;
+			$sample_install_sh .= 'echo \"Result: 55.5\" > \$LOG_FILE' . PHP_EOL;
+			$sample_install_sh .= 'echo \$? > ~/test-exit-status' . PHP_EOL;
+			$sample_install_sh .= PHP_EOL . '" > ~/' . $test_executable . PHP_EOL;
+			$sample_install_sh .= 'chmod +x ~/' . $test_executable . PHP_EOL;
+
+			$sample_install_sh .= PHP_EOL . '# Check out the `phoronix-test-suite debug-run` command when trying to debug your install/run behavior' . PHP_EOL;
+
+			file_put_contents($tp_path . '/install.sh', $sample_install_sh);
 		}
 
-		$els = $xpath->evaluate('xs:complexType/xs:sequence/xs:element', $el);
-		if(is_array($o))
+		if(!is_file($tp_path . '/results-definition.xml'))
 		{
-			foreach($o as $j)
-			{
-				foreach($els as $e)
-				{
-					self::xsd_display_elements_cli($j, $xpath, $e, ($depth + 1), $types);
-				}
-			}
+			file_put_contents($tp_path . '/results-definition.xml', '<?xml version="1.0"?>
+<PhoronixTestSuite>
+  <ResultsParser>
+    <OutputTemplate>Result: #_RESULT_#</OutputTemplate>
+  </ResultsParser>
+</PhoronixTestSuite>');
 		}
-		else
+
+		if(!is_file($tp_path . '/pre.sh'))
 		{
-			foreach($els as $e)
-			{
-				self::xsd_display_elements_cli($o, $xpath, $e, ($depth + 1), $types);
-			}
+			file_put_contents($tp_path . '/pre.sh', '#!/bin/sh
+# pre.sh is called prior to running the test, if needed to setup any sample data / create a test file / seed a cache / related pre-run tasks');
 		}
-		echo PHP_EOL;
+
+		if(!is_file($tp_path . '/interim.sh'))
+		{
+			file_put_contents($tp_path . '/interim.sh', '#!/bin/sh
+# interim.sh is called in between test runs for when a test profile is set via TimesToRun to execute multiple times. This is useful for restoring a program\'s state or any other changes that need to be made in between runs.');
+		}
+
+		if(!is_file($tp_path . '/post.sh'))
+		{
+			file_put_contents($tp_path . '/post.sh', '#!/bin/sh
+# post.sh is called after the test has been run, if needed to flush any cache / temporary files, clean-up anything, etc.');
+		}
 	}
 }
 

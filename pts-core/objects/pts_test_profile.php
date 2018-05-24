@@ -33,7 +33,7 @@ class pts_test_profile extends pts_test_profile_parser
 			$this->set_override_values($override_values);
 		}
 
-		if($normal_init && PTS_IS_CLIENT && is_file($this->get_install_dir() . 'pts-install.xml'))
+		if($normal_init && PTS_IS_CLIENT && $this->identifier != null && is_file($this->get_install_dir() . 'pts-install.xml'))
 		{
 			$this->test_installation = new pts_installed_test($this);
 		}
@@ -464,7 +464,6 @@ class pts_test_profile extends pts_test_profile_parser
 					$pkg_filesize = isset($pkg->FileSize) ? $pkg->FileSize->__toString() : null;
 					$pkg_architecture = isset($pkg->ArchitectureSpecific) ? $pkg->ArchitectureSpecific->__toString() : null;
 					$pkg_platforms = isset($pkg->PlatformSpecific) ? $pkg->PlatformSpecific->__toString() : null;
-					$pkg_architecture = isset($pkg->ArchitectureSpecific) ? $pkg->ArchitectureSpecific->__toString() : null;
 					$downloads[] = new pts_test_file_download($pkg_url, $pkg_filename, $pkg_filesize, $pkg_md5, $pkg_sha256, $pkg_platforms, $pkg_architecture);
 				}
 			}

@@ -112,7 +112,7 @@ function phoromatic_init_web_page_setup()
 	}
 
 	define('PHOROMATIC_SERVER', true);
-	if(PTS_IS_DEV_BUILD)
+	if(defined('PTS_IS_DEV_BUILD') && PTS_IS_DEV_BUILD)
 	{
 		error_reporting(E_ALL);
 	}
@@ -308,6 +308,7 @@ function phoromatic_webui_header_logged_in()
 	else if($_SESSION['AdminLevel'] > 0)
 	{
 		$sub_main_menu = array();
+		$sub_tests_menu = array();
 		$sub_systems_menu = array();
 		$sub_testing_menu = array();
 		$sub_results_menu = array();
@@ -319,7 +320,7 @@ function phoromatic_webui_header_logged_in()
 			$sub_systems_menu[] = 'Component Table';
 		}
 
-		$sub_main_menu[] = '<a href="?tests">Test Profiles</a>';
+		//$sub_main_menu[] = '<a href="?tests">Test Profiles</a>';
 		if(isset($_SESSION['AdminLevel']) && $_SESSION['AdminLevel'] < 4)
 		{
 			$sub_main_menu[] = 'Users';
@@ -327,6 +328,8 @@ function phoromatic_webui_header_logged_in()
 
 		array_push($sub_main_menu, 'Settings', '<a href="?account_activity">Account Activity</a>', 'Logout');
 		$sub_testing_menu[] = '<a href="?schedules">Test Schedules</a>';
+
+			array_push($sub_tests_menu, '<a href="?create_test">Create New Test Profile</a>');
 
 		if(!PHOROMATIC_USER_IS_VIEWER)
 		{
@@ -339,7 +342,7 @@ function phoromatic_webui_header_logged_in()
 		}
 		$sub_results_menu[] = '<a href="/rss.php?user=' . $_SESSION['UserID'] . '&amp;v=' . sha1($_SESSION['CreatedOn']) . '">Results Feed <img src="images/rss.png" /></a>';
 
-		$pages = array('Main' => $sub_main_menu, 'Systems' => $sub_systems_menu, '<a href="/?testing">Testing</a>' => $sub_testing_menu, 'Results' => $sub_results_menu, '<form action="/?search" method="post" id="search"><input type="search" name="search" id="seach_input" size="16" /> <input type="submit" name="sa" value="Search" /><div class="search_expander"></div></form>');
+		$pages = array('Main' => $sub_main_menu, 'Systems' => $sub_systems_menu, 'Tests' => $sub_tests_menu, '<a href="/?testing">Testing</a>' => $sub_testing_menu, 'Results' => $sub_results_menu, '<form action="/?search" method="post" id="search"><input type="search" name="search" id="seach_input" size="16" /> <input type="submit" name="sa" value="Search" /><div class="search_expander"></div></form>');
 	}
 
 	foreach($pages as $title => $page)

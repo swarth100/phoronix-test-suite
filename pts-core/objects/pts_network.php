@@ -49,6 +49,9 @@ class pts_network
 		{
 			return false;
 		}
+//echo $url . PHP_EOL; var_dump($to_post_data);
+//var_dump(debug_backtrace());
+//exit;
 
 		$stream_context = pts_network::stream_context_create(null, $override_proxy, $override_proxy_port, $override_proxy_user, $override_proxy_pw, $http_timeout);
 		$contents = pts_file_io::file_get_contents($url, 0, $stream_context);
@@ -73,7 +76,9 @@ class pts_network
 		{
 			return false;
 		}
-
+//echo $url . PHP_EOL; var_dump($to_post_data);
+//var_dump(debug_backtrace());
+//exit;
 		$upload_data = http_build_query($to_post_data);
 		$http_parameters = array('http' => array('method' => 'POST', 'content' => $upload_data));
 		if($supports_proxy)
@@ -95,7 +100,6 @@ class pts_network
 		{
 			return false;
 		}
-
 		if(strpos($download, '://') === false)
 		{
 			$download = 'http://' . $download;
@@ -697,12 +701,12 @@ class pts_network
 	}
 	public static function find_zeroconf_phoromatic_servers($find_multiple = false)
 	{
+		$hosts = $find_multiple ? array() : null;
+
 		if(!pts_network::network_support_available())
 		{
-			return null;
+			return $hosts;
 		}
-
-		$hosts = $find_multiple ? array() : null;
 
 		if(PTS_IS_CLIENT && pts_client::executable_in_path('avahi-browse'))
 		{

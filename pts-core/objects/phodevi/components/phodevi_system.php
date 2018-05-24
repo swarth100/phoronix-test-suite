@@ -535,14 +535,16 @@ class phodevi_system extends phodevi_device_interface
 
 
 			// Spectre
-			foreach(array('spectre_v1', 'spectre_v2') as $vulns)
+			foreach(array('spectre_v1', 'spectre_v2', 'spec_store_bypass') as $vulns)
 			{
 				if(is_file('/sys/devices/system/cpu/vulnerabilities/' . $vulns))
 				{
 					$fc = file_get_contents('/sys/devices/system/cpu/vulnerabilities/' . $vulns);
 					if(($x = strpos($fc, ': ')) !== false)
 					{
-						$security[] = trim(substr($fc, $x + 2));
+						$fc = trim(substr($fc, $x + 2));
+						$fc = str_replace('Speculative Store Bypass', 'SSB', $fc);
+						$security[] = $fc;
 					}
 				}
 			}
@@ -560,9 +562,9 @@ class phodevi_system extends phodevi_device_interface
 			}
 
 			// DragonFlyBSD
-			if(phodevi_bsd_parser::read_sysctl('machdep.spectre_mitigation') == '1')
+			if(($spectre = phodevi_bsd_parser::read_sysctl('machdep.spectre_mitigation')) != '0' && !empty($spectre))
 			{
-				$security[] = 'Spectre Mitigation';
+				$security[] = 'Spectre ' . $spectre . ' Mitigation';
 			}
 			if(phodevi_bsd_parser::read_sysctl('machdep.meltdown_mitigation') == '1')
 			{

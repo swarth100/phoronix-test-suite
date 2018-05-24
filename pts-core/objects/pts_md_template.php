@@ -78,10 +78,13 @@ class pts_md_template
 					$this->md .= PHP_EOL;
 					break;
 				case 'li':
-					$this->md .= $this->html_text_interpret($dom_item);
+					$this->md .= trim($this->html_text_interpret($dom_item));
+					break;
+				case 'blockquote':
+					$this->md .= PHP_EOL . '> ' . str_replace("\n", "  \n> ", htmlentities($value)) . PHP_EOL . PHP_EOL;
 					break;
 				case 'p':
-					$this->md .= $this->html_text_interpret($dom_item) . PHP_EOL;
+					$this->md .= trim($this->html_text_interpret($dom_item)) . PHP_EOL;
 					break;
 				case 'hr':
 					$this->md .= PHP_EOL . '---' . PHP_EOL;
@@ -106,19 +109,22 @@ class pts_md_template
 			switch($name)
 			{
 				case 'em':
-					$text .= '*' . $value . '*';
+					$text .= ' *' . $value . '* ';
 					break;
 				case 'u':
-					$text .= '_' . $value . '_';
+					$text .= ' _' . $value . '_ ';
 					break;
 				case 'strong':
-					$text .= '**' . $value . '**';
+					$text .= ' **' . $value . '** ';
 					break;
 				case '#text':
 					$text .= trim($value);
 					break;
 				case 'a':
-					$text .= '[' . $value . '](' . $dom_item->childNodes->item($j)->attributes->getNamedItem('href')->nodeValue . ')';
+					$text .= ' [' . $value . '](' . $dom_item->childNodes->item($j)->attributes->getNamedItem('href')->nodeValue . ') ';
+					break;
+				case 'br':
+					$text .= PHP_EOL;
 					break;
 				default:
 					echo "UNSUPPORTED: $name: $value\n";
