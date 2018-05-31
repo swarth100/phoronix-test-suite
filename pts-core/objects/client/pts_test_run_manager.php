@@ -336,7 +336,7 @@ class pts_test_run_manager
 					echo PHP_EOL . 'The name of the saved file must have between 2 and 126 characters in length.' . PHP_EOL;
 				}
 
-				pts_client::$display->generic_prompt('Enter a name to save these results under: ');
+				pts_client::$display->generic_prompt(pts_client::cli_just_bold('Enter a name to save these results under: '));
 				$save_name = pts_user_io::read_user_input();
 			}
 		}
@@ -1679,7 +1679,7 @@ class pts_test_run_manager
 			}
 			else if($test_profile->get_test_executable_dir() == null)
 			{
-				pts_client::$display->test_run_error('The test executable for ' . $test_profile . ' could not be located.');
+				pts_client::$display->test_run_error('The test executable for ' . $test_profile . ' could not be located. Looking for ' . $test_profile->get_test_executable() . ' in ' . $test_profile->get_install_dir());
 				$valid_test_profile = false;
 			}
 
