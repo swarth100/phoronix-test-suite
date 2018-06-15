@@ -23,6 +23,8 @@
 
 class phodevi_system extends phodevi_device_interface
 {
+	public static $report_wine_override = false;
+
 	public static function properties()
 	{
 		return array(
@@ -51,7 +53,7 @@ class phodevi_system extends phodevi_device_interface
 			'kernel-string' => new phodevi_device_property('sw_kernel_string', phodevi::smart_caching),
 			'kernel-parameters' => new phodevi_device_property('sw_kernel_parameters', phodevi::std_caching),
 			'compiler' => new phodevi_device_property('sw_compiler', phodevi::no_caching),
-			'system-layer' => new phodevi_device_property('sw_system_layer', phodevi::std_caching),
+			'system-layer' => new phodevi_device_property('sw_system_layer', phodevi::no_caching),
 			'environment-variables' => new phodevi_device_property('sw_environment_variables', phodevi::std_caching),
 			'security-features' => new phodevi_device_property('sw_security_features', phodevi::std_caching)
 			);
@@ -76,6 +78,10 @@ class phodevi_system extends phodevi_device_interface
 		$layer = null;
 
 		if(phodevi::is_windows() && pts_client::executable_in_path('winecfg.exe') && ($wine = phodevi::read_property('system', 'wine-version')))
+		{
+			$layer = $wine;
+		}
+		else if((getenv('USE_WINE') || getenv('WINE_VERSION') || self::$report_wine_override) && ($wine = phodevi::read_property('system', 'wine-version')))
 		{
 			$layer = $wine;
 		}
@@ -1444,8 +1450,18 @@ class phodevi_system extends phodevi_device_interface
 				}
 
 			}
+			$xorg_log = isset(phodevi::$vfs->xorg_log) ? phodevi::$vfs->xorg_log : false;
+			if($xorg_log && ($x = strpos($xorg_log, 'X.Org X Server ')) !== false)
+			{
+				$xorg_log = substr($xorg_log, ($x + strlen('X.Org X Server ')));
+				$xorg_log = substr($xorg_log, 0, strpos($xorg_log, PHP_EOL));
 
-			if(($x_bin = (is_executable('/usr/libexec/Xorg.bin') ? '/usr/libexec/Xorg.bin' : false)) || ($x_bin = pts_client::executable_in_path('Xorg')) || ($x_bin = pts_client::executable_in_path('X')))
+				if(pts_strings::is_version($xorg_log))
+				{
+					array_push($display_servers, 'X Server ' . $xorg_log);
+				}
+			}
+			else if(($x_bin = (is_executable('/usr/libexec/Xorg.bin') ? '/usr/libexec/Xorg.bin' : false)) || ($x_bin = pts_client::executable_in_path('Xorg')) || ($x_bin = pts_client::executable_in_path('X')))
 			{
 				// Find graphics subsystem version
 				$info = shell_exec($x_bin . ' ' . (phodevi::is_solaris() ? ':0' : '') . ' -version 2>&1');
@@ -1480,7 +1496,7 @@ class phodevi_system extends phodevi_device_interface
 				array_push($display_servers, 'GNOME Shell Wayland');
 			}
 
-			if(empty($display_servers) && getenv('WAYLAND_DISPLAY') != false)
+			if(getenv('WAYLAND_DISPLAY') != false)
 			{
 				array_push($display_servers, 'Wayland');
 			}
@@ -1990,7 +2006,11 @@ class phodevi_system extends phodevi_device_interface
 	{
 		$wine_version = null;
 
-		if(pts_client::executable_in_path('wine') != false)
+		if((($use_wine = getenv('USE_WINE')) !== false || ($use_wine = getenv('WINE_VERSION')) !== false) && (is_executable($use_wine) || ($use_wine = pts_client::executable_in_path($use_wine)) !== false))
+		{
+			$wine_version = trim(shell_exec($use_wine . ' --version 2>&1'));
+		}
+		else if(pts_client::executable_in_path('wine') != false)
 		{
 			$wine_version = trim(shell_exec('wine --version 2>&1'));
 		}

@@ -782,7 +782,8 @@ class pts_test_run_manager
 				$this->result_file->set_preset_environment_variables($this->get_preset_environment_variables());
 
 				// TODO XXX JSON In null and notes
-				$sys = new pts_result_file_system($this->results_identifier, phodevi::system_hardware(true), phodevi::system_software(true), $this->generate_json_system_attributes(), pts_client::current_user(), null, date('Y-m-d H:i:s'), PTS_VERSION);
+				$json_attr = $this->generate_json_system_attributes();
+				$sys = new pts_result_file_system($this->results_identifier, phodevi::system_hardware(true), phodevi::system_software(true), $json_attr, pts_client::current_user(), null, date('Y-m-d H:i:s'), PTS_VERSION);
 				$this->result_file->add_system($sys);
 			}
 
@@ -907,6 +908,10 @@ class pts_test_run_manager
 		{
 			$notes['python'] = phodevi::read_property('system', 'python-version');
 		}
+		if(in_array('wine', $test_external_dependencies))
+		{
+			phodevi_system::$report_wine_override = true;
+		}
 
 		$notes['security'] = phodevi::read_property('system', 'security-features');
 
@@ -955,7 +960,7 @@ class pts_test_run_manager
 				}
 				else
 				{
-					if((pts_client::read_env('DISPLAY') == false && pts_client::read_env('WAYLAND_DISPLAY') == false && !phodevi::is_windows()) && !defined('PHOROMATIC_PROCESS'))
+					if((pts_client::read_env('DISPLAY') == false && pts_client::read_env('WAYLAND_DISPLAY') == false && !phodevi::is_windows() && !phodevi::is_macosx()) && !defined('PHOROMATIC_PROCESS'))
 					{
 						$txt_results = pts_user_io::prompt_bool_input('Do you want to view the text results of the testing', true);
 						if($txt_results)

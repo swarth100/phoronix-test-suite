@@ -1,5 +1,19 @@
 PHORONIX TEST SUITE CHANGE-LOG
 
+Phoronix Test Suite (Git)
+
+pts-core: Add "wine" external dependency support
+phoromatic: Various minor fixes and enhancements
+phodevi: Add USE_WINE environment variable check, point it towards the wine binary you wish to test
+
+Phoronix Test Suite 8.0.0-Aremark
+5 June 2018
+
+pts-core: Various macOS support tweaks/improvements
+pts-core: Add external dependency support for Brew macOS package manager
+pts-core: Avoid duplicate test identifiers on graphs
+phodevi: Improved X.Org Server version detection
+
 Phoronix Test Suite 8.0.0 Milestone 5
 30 May 2018
 

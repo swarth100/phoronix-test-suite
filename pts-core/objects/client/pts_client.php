@@ -259,7 +259,7 @@ class pts_client
 			'OPERATING_SYSTEM' => phodevi::read_property('system', 'vendor-identifier'),
 			'OS_VERSION' => phodevi::read_property('system', 'os-version'),
 			'OS_ARCH' => phodevi::read_property('system', 'kernel-architecture'),
-			'OS_TYPE' => phodevi::operating_system(),
+			'OS_TYPE' => phodevi::os_under_test(),
 			'THIS_RUN_TIME' => PTS_INIT_TIME,
 			'DEBUG_REAL_HOME' => pts_core::user_home_directory(),
 			'SYSTEM_TYPE_ID' => phodevi_base::determine_system_type(phodevi::system_hardware(), phodevi::system_software()),
@@ -1052,6 +1052,8 @@ class pts_client
 			$result_file = new pts_result_file($test_results_identifier);
 		}
 
+		$result_file->avoid_duplicate_identifiers();
+
 		$generated_graphs = array();
 		$generated_graph_tables = false;
 
@@ -1574,7 +1576,7 @@ class pts_client
 			}
 			else
 			{
-				$var_string .= 'export ' . $key . '=' . str_replace(' ', '\ ', trim($extra_vars[$key])) . ';';
+				$var_string .= 'export ' . $key . '="' . str_replace(' ', '\ ', trim($extra_vars[$key])) . '";';
 			}
 		}
 		$var_string .= ' ';

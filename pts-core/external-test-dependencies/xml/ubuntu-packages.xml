@@ -73,7 +73,7 @@
 		</Package>
 		<Package>
 			<GenericName>tiff</GenericName>
-			<PackageName>libtiff-dev</PackageName>
+			<PackageName>libtiff5-dev</PackageName>
 		</Package>
 		<Package>
 			<GenericName>bison</GenericName>
@@ -97,7 +97,7 @@
 		</Package>
 		<Package>
 			<GenericName>portaudio-development</GenericName>
-			<PackageName>libportaudio-dev</PackageName>
+			<PackageName>portaudio19-dev</PackageName>
 		</Package>
 		<Package>
 			<GenericName>fortran-compiler</GenericName>
@@ -368,6 +368,10 @@
 		<Package>
 			<GenericName>darktable</GenericName>
 			<PackageName>darktable</PackageName>
+		</Package>
+		<Package>
+			<GenericName>wine</GenericName>
+			<PackageName>wine</PackageName>
 		</Package>
 	</ExternalDependencies>
 </PhoronixTestSuite>

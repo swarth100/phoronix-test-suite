@@ -3,74 +3,52 @@
 <PhoronixTestSuite>
 	<ExternalDependencies>
 		<Information>
-			<Name>Arch Linux</Name>
-			<PackageManager>pacman</PackageManager>
+			<Name>macOS Brew</Name>
+			<PackageManager>brew</PackageManager>
 		</Information>
 		<Package>
-			<GenericName>common-dependencies</GenericName>
-			<PackageName>mesa-demos</PackageName>
-			<FileCheck>glxinfo</FileCheck>
-		</Package>
-		<Package>
 			<GenericName>gtk-development</GenericName>
-			<PackageName>gtk2</PackageName>
-		</Package>
-		<Package>
-			<GenericName>sdl-development</GenericName>
-			<PackageName>sdl sdl_net sdl_gfx sdl_image sdl_ttf</PackageName>
+			<PackageName>gtk+</PackageName>
 		</Package>
 		<Package>
 			<GenericName>sdl2-development</GenericName>
-			<PackageName>sdl2 sdl2_net sdl2_gfx sdl2_image sdl2_ttf sdl2_mixer</PackageName>
+			<PackageName>sdl2 sdl2_gfx sdl2_image sdl2_mixer sdl2_net</PackageName>
+		</Package>
+		<Package>
+			<GenericName>sdl-development</GenericName>
+			<PackageName>sdl sdl_gfx sdl_image sdl_mixer sdl_net</PackageName>
 		</Package>
 		<Package>
 			<GenericName>glut</GenericName>
 			<PackageName>freeglut</PackageName>
 		</Package>
 		<Package>
-			<GenericName>vulkan-development</GenericName>
-			<PackageName>vulkan-icd-loader</PackageName>
-		</Package>
-		<Package>
-			<GenericName>pcre</GenericName>
-			<PackageName>pcre</PackageName>
-		</Package>
-		<Package>
-			<GenericName>nasm</GenericName>
-			<PackageName>nasm</PackageName>
+			<GenericName>csh</GenericName>
+			<PackageName>tcsh</PackageName>
 		</Package>
 		<Package>
 			<GenericName>libpng-development</GenericName>
 			<PackageName>libpng</PackageName>
 		</Package>
 		<Package>
-			<GenericName>rust</GenericName>
-			<PackageName>rust</PackageName>
+			<GenericName>openssl-development</GenericName>
+			<PackageName>openssl</PackageName>
+		</Package>
+		<Package>
+			<GenericName>build-utilities</GenericName>
+			<PackageName>autoconf automake gcc</PackageName>
+		</Package>
+		<Package>
+			<GenericName>cairo-development</GenericName>
+			<PackageName>cairo</PackageName>
 		</Package>
 		<Package>
 			<GenericName>tiff</GenericName>
 			<PackageName>libtiff</PackageName>
 		</Package>
 		<Package>
-			<GenericName>build-utilities</GenericName>
-			<PackageName>gcc make autoconf</PackageName>
-			<FileCheck>g++</FileCheck>
-		</Package>
-		<Package>
-			<GenericName>xorg-development</GenericName>
-			<PackageName>xorg</PackageName>
-		</Package>
-		<Package>
-			<GenericName>openssl-development</GenericName>
-			<PackageName>openssl</PackageName>
-		</Package>
-		<Package>
 			<GenericName>bison</GenericName>
 			<PackageName>bison</PackageName>
-		</Package>
-		<Package>
-			<GenericName>smartmontools</GenericName>
-			<PackageName>smartmontools</PackageName>
 		</Package>
 		<Package>
 			<GenericName>flex</GenericName>
@@ -78,11 +56,7 @@
 		</Package>
 		<Package>
 			<GenericName>imlib2-development</GenericName>
-			<PackageName>imlib2</PackageName>
-		</Package>
-		<Package>
-			<GenericName>java</GenericName>
-			<PackageName>jdk8-openjdk</PackageName>
+			<PackageName>libimlib2</PackageName>
 		</Package>
 		<Package>
 			<GenericName>maven</GenericName>
@@ -93,45 +67,48 @@
 			<PackageName>portaudio</PackageName>
 		</Package>
 		<Package>
-			<GenericName>fortran-compiler</GenericName>
-			<PackageName>gcc-fortran</PackageName>
-		</Package>
-		<Package>
 			<GenericName>glew</GenericName>
 			<PackageName>glew</PackageName>
 		</Package>
 		<Package>
-			<GenericName>scons</GenericName>
-			<PackageName>scons</PackageName>
-		</Package>
-		<Package>
-			<GenericName>zlib-development</GenericName>
-			<PackageName>zlib1</PackageName>
-		</Package>
-		<Package>
-			<GenericName>jpeg-development</GenericName>
-			<PackageName>libjpeg</PackageName>
+			<GenericName>lib3ds</GenericName>
+			<PackageName>lib3ds</PackageName>
 		</Package>
 		<Package>
 			<GenericName>bc</GenericName>
 			<PackageName>bc</PackageName>
 		</Package>
 		<Package>
+			<GenericName>freeimage</GenericName>
+			<PackageName>freeimage</PackageName>
+		</Package>
+		<Package>
+			<GenericName>scons</GenericName>
+			<PackageName>scons</PackageName>
+		</Package>
+		<Package>
+			<GenericName>smartmontools</GenericName>
+			<PackageName>smartmontools</PackageName>
+		</Package>
+		<Package>
+			<GenericName>zlib-development</GenericName>
+			<PackageName>zlib</PackageName>
+		</Package>
+		<Package>
+			<GenericName>jpeg-development</GenericName>
+			<PackageName>jpeg</PackageName>
+		</Package>
+		<Package>
+			<GenericName>pcre</GenericName>
+			<PackageName>pcre2</PackageName>
+		</Package>
+		<Package>
 			<GenericName>perl</GenericName>
 			<PackageName>perl</PackageName>
-			<FileCheck>/usr/bin/perl</FileCheck>
-		</Package>
-		<Package>
-			<GenericName>xorg-video</GenericName>
-			<PackageName>xorg libvdpau</PackageName>
-		</Package>
-		<Package>
-			<GenericName>libstdcpp5</GenericName>
-			<PackageName>libstdc++5</PackageName>
 		</Package>
 		<Package>
 			<GenericName>openal-development</GenericName>
-			<PackageName>openal</PackageName>
+			<PackageName>openal-soft</PackageName>
 		</Package>
 		<Package>
 			<GenericName>vorbis-development</GenericName>
@@ -139,24 +116,27 @@
 		</Package>
 		<Package>
 			<GenericName>jam</GenericName>
-			<PackageName>ftjam</PackageName>
+			<PackageName>jam</PackageName>
 		</Package>
 		<Package>
-			<GenericName>qt4-development</GenericName>
-			<PackageName>qt4</PackageName>
+			<GenericName>p7zip</GenericName>
+			<PackageName>p7zip</PackageName>
 		</Package>
 		<Package>
 			<GenericName>autoconf</GenericName>
 			<PackageName>autoconf</PackageName>
-			<FileCheck>/usr/bin/autoconf</FileCheck>
 		</Package>
 		<Package>
 			<GenericName>libtool</GenericName>
 			<PackageName>libtool</PackageName>
 		</Package>
 		<Package>
-			<GenericName>numa-development</GenericName>
-			<PackageName>numactl</PackageName>
+			<GenericName>ncurses-development</GenericName>
+			<PackageName>ncurses</PackageName>
+		</Package>
+		<Package>
+			<GenericName>popt</GenericName>
+			<PackageName>popt</PackageName>
 		</Package>
 		<Package>
 			<GenericName>curl</GenericName>
@@ -168,56 +148,51 @@
 		</Package>
 		<Package>
 			<GenericName>blas-development</GenericName>
-			<PackageName>blas</PackageName>
+			<PackageName>openblas</PackageName>
 		</Package>
 		<Package>
 			<GenericName>lapack-development</GenericName>
 			<PackageName>lapack</PackageName>
 		</Package>
 		<Package>
-			<GenericName>cmake</GenericName>
-			<PackageName>cmake</PackageName>
+			<GenericName>openmpi-development</GenericName>
+			<PackageName>mpich</PackageName>
 		</Package>
 		<Package>
-			<GenericName>common-dependencies</GenericName>
-			<PackageName>unzip mesa-demos</PackageName>
-			<FileCheck>unzip, glxinfo</FileCheck>
+			<GenericName>cmake</GenericName>
+			<PackageName>cmake</PackageName>
 		</Package>
 		<Package>
 			<GenericName>boost-development</GenericName>
 			<PackageName>boost</PackageName>
 		</Package>
 		<Package>
-			<GenericName>p7zip</GenericName>
-			<PackageName>p7zip</PackageName>
-		</Package>
-		<Package>
-			<GenericName>cairo-development</GenericName>
-			<PackageName>cairo</PackageName>
+			<GenericName>bzip2-development</GenericName>
+			<PackageName>bzip2</PackageName>
 		</Package>
 		<Package>
 			<GenericName>tcl</GenericName>
-			<PackageName>tcl</PackageName>
+			<PackageName>tcl-tk</PackageName>
 		</Package>
 		<Package>
-			<GenericName>meson</GenericName>
-			<PackageName>meson</PackageName>
+			<GenericName>rust</GenericName>
+			<PackageName>rust</PackageName>
 		</Package>
 		<Package>
 			<GenericName>python</GenericName>
 			<PackageName>python</PackageName>
 		</Package>
 		<Package>
+			<GenericName>python-numpy</GenericName>
+			<PackageName>numpy</PackageName>
+		</Package>
+		<Package>
 			<GenericName>yasm</GenericName>
 			<PackageName>yasm</PackageName>
 		</Package>
 		<Package>
-			<GenericName>lib3ds</GenericName>
-			<PackageName>lib3ds</PackageName>
-		</Package>
-		<Package>
 			<GenericName>gmp-library</GenericName>
-			<PackageName>libgmp</PackageName>
+			<PackageName>gmp</PackageName>
 		</Package>
 		<Package>
 			<GenericName>subversion</GenericName>
@@ -225,39 +200,31 @@
 		</Package>
 		<Package>
 			<GenericName>git</GenericName>
-			<PackageName>git</PackageName>
+			<PackageName>git-core</PackageName>
 		</Package>
 		<Package>
 			<GenericName>superlu</GenericName>
 			<PackageName>superlu</PackageName>
 		</Package>
 		<Package>
-			<GenericName>suitesparse</GenericName>
-			<PackageName>suitesparse</PackageName>
-		</Package>
-		<Package>
-			<GenericName>openmpi-development</GenericName>
-			<PackageName>openmpi</PackageName>
-		</Package>
-		<Package>
-			<GenericName>dune</GenericName>
-			<PackageName>dune-common dune-grid dune-istl</PackageName>
-		</Package>
-		<Package>
 			<GenericName>tinyxml</GenericName>
-			<PackageName>tinyxml</PackageName>
+			<PackageName>libtinyxml tinyxml2</PackageName>
 		</Package>
 		<Package>
 			<GenericName>opencl</GenericName>
-			<PackageName>opencl-headers</PackageName>
-		</Package>
-		<Package>
-			<GenericName>attr</GenericName>
-			<PackageName>attr</PackageName>
+			<PackageName>clinfo</PackageName>
 		</Package>
 		<Package>
 			<GenericName>httpd</GenericName>
-			<PackageName>apache</PackageName>
+			<PackageName>httpd</PackageName>
+		</Package>
+		<Package>
+			<GenericName>meson</GenericName>
+			<PackageName>meson</PackageName>
+		</Package>
+                <Package>
+			<GenericName>golang</GenericName>
+			<PackageName>go</PackageName>
 		</Package>
                 <Package>
 			<GenericName>redis-server</GenericName>
@@ -267,17 +234,9 @@
 			<GenericName>opencv</GenericName>
 			<PackageName>opencv</PackageName>
 		</Package>
-                <Package>
-			<GenericName>golang</GenericName>
-			<PackageName>go</PackageName>
-		</Package>
 		<Package>
 			<GenericName>python-scipy</GenericName>
-			<PackageName>python2-scipy</PackageName>
-		</Package>
-		<Package>
-			<GenericName>python-sklearn</GenericName>
-			<PackageName>python2-scikit-learn</PackageName>
+			<PackageName>scipy</PackageName>
 		</Package>
 		<Package>
 			<GenericName>V8</GenericName>

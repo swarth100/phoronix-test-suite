@@ -23,6 +23,8 @@
 class pts_tests
 {
 	public static $extra_env_vars = null;
+	protected static $override_test_script_execution_handler = false;
+
 	public static function add_extra_env_var($name, $value)
 	{
 		self::$extra_env_vars[$name] = $value;
@@ -212,7 +214,7 @@ class pts_tests
 		$result = null;
 		$test_directory = $test_profile->get_install_dir();
 		pts_file_io::mkdir($test_directory, 0777, true);
-		$os_postfix = '_' . strtolower(phodevi::operating_system());
+		$os_postfix = '_' . strtolower(phodevi::os_under_test());
 		$test_profiles = array($test_profile);
 
 		if($use_ctp)
@@ -247,32 +249,41 @@ class pts_tests
 					pts_client::$display->test_run_message($print_string);
 				}
 
-				if($use_phoroscript || pts_client::read_env('USE_PHOROSCRIPT_INTERPRETER') != false)
+				if(self::$override_test_script_execution_handler && is_callable(self::$override_test_script_execution_handler))
 				{
-					echo PHP_EOL . 'Falling back to experimental PhoroScript code path...' . PHP_EOL;
-					$phoroscript = new pts_phoroscript_interpreter($run_file, $extra_vars, $test_directory);
-					$phoroscript->execute_script($pass_argument);
-					$this_result = null;
+					$this_result = call_user_func(self::$override_test_script_execution_handler, $test_directory, $sh, $run_file, $pass_argument, $extra_vars, $this_test_profile);
 				}
-				else if(phodevi::is_windows())
-				{
-					$host_env = $_SERVER;
-					unset($host_env['argv']);
-					$descriptorspec = array(0 => array('pipe', 'r'), 1 => array('pipe', 'w'), 2 => array('pipe', 'w'));
-					$test_process = proc_open($sh . ' ' . $run_file . ' ' . $pass_argument . (phodevi::is_windows() && false ? '' : ' 2>&1'), $descriptorspec, $pipes, $test_directory, array_merge($host_env, pts_client::environmental_variables(), $extra_vars));
 
-					if(is_resource($test_process))
-					{
-						//echo proc_get_status($test_process)['pid'];
-						$this_result = stream_get_contents($pipes[1]);
-						fclose($pipes[1]);
-						fclose($pipes[2]);
-						$return_value = proc_close($test_process);
-					}
-				}
-				else
+				// if override_test_script_execution_handler returned -1, fallback to using normal script handler
+				if(!isset($this_result) || $this_result == '-1')
 				{
-					$this_result = pts_client::shell_exec('cd ' .  $test_directory . (phodevi::is_windows() ? '; ' : ' && ') . $sh . ' ' . $run_file . ' ' . $pass_argument . (phodevi::is_windows() ? '' : ' 2>&1'), $extra_vars);
+					if($use_phoroscript || pts_client::read_env('USE_PHOROSCRIPT_INTERPRETER') != false)
+					{
+						echo PHP_EOL . 'Falling back to experimental PhoroScript code path...' . PHP_EOL;
+						$phoroscript = new pts_phoroscript_interpreter($run_file, $extra_vars, $test_directory);
+						$phoroscript->execute_script($pass_argument);
+						$this_result = null;
+					}
+					else if(phodevi::is_windows())
+					{
+						$host_env = $_SERVER;
+						unset($host_env['argv']);
+						$descriptorspec = array(0 => array('pipe', 'r'), 1 => array('pipe', 'w'), 2 => array('pipe', 'w'));
+						$test_process = proc_open($sh . ' ' . $run_file . ' ' . $pass_argument . (phodevi::is_windows() && false ? '' : ' 2>&1'), $descriptorspec, $pipes, $test_directory, array_merge($host_env, pts_client::environmental_variables(), $extra_vars));
+
+						if(is_resource($test_process))
+						{
+							//echo proc_get_status($test_process)['pid'];
+							$this_result = stream_get_contents($pipes[1]);
+							fclose($pipes[1]);
+							fclose($pipes[2]);
+							$return_value = proc_close($test_process);
+						}
+					}
+					else
+					{
+						$this_result = pts_client::shell_exec('cd ' .  $test_directory . (phodevi::is_windows() ? '; ' : ' && ') . $sh . ' ' . $run_file . ' ' . $pass_argument . (phodevi::is_windows() ? '' : ' 2>&1'), $extra_vars);
+					}
 				}
 
 				if(trim($this_result) != null)
@@ -283,6 +294,15 @@ class pts_tests
 		}
 
 		return $result;
+	}
+	public static function override_script_test_execution_handler($to_call)
+	{
+		if(is_callable($to_call))
+		{
+			self::$override_test_script_execution_handler = $to_call;
+			return true;
+		}
+		return false;
 	}
 	public static function update_test_install_xml(&$test_profile, $this_duration = 0, $is_install = false, $compiler_data = null, $install_footnote = null)
 	{
